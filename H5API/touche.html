@@ -22,23 +22,33 @@
         #inner {
             background: brown;
             position: relative;
-            height: 150px;
+            height: 140px;
             margin-top: 10px;
         }
 
         #theCenterBox {
             border-style: none dotted none dotted;
             height: 10%;
-            width: 100px;
-            margin: 0 auto;
+            position: absolute;
         }
 
         .square {
+            position: relative;
             background: red;
             width: 100px;
             height: 100px;
-            margin: 10px;
-            display: inline-table
+            margin: 20px 10px 20px 10px;
+            display: inline-table;
+            vertical-align: middle;
+        }
+
+        .biggerSquare {
+            background: red;
+            width: 120px;
+            height: 120px;
+            margin: 10px 10px 10px 10px;
+            display: inline-table;
+            vertical-align: middle;
         }
 
         #fix {
@@ -65,37 +75,41 @@ HTML代码
 
     var LEN_UNIT = 'px';//长度单位
     var theSquareMagin = 10;
-    var theSquareWidth = 100 + theSquareMagin*2;//方块的宽度
+    var theSquareWidth = 100 + theSquareMagin * 2;//方块的宽度
+    var theSquareBiggerWidth = 120;//变大后的宽度
     var theDragDiv = document.getElementById('inner');//取得拖动对象
 
-    theDragDiv.style.width = theDragDiv.children.length * theSquareWidth + LEN_UNIT; //根据其子元素的个数设置它的宽度+ (theDragDiv.children.length-1)*10
+    theDragDiv.style.width = theDragDiv.children.length * theSquareWidth + 40 + LEN_UNIT; //根据其子元素的个数设置它的宽度,40是预留变大的宽度
     console.log(theDragDiv.style.width);
 
-    var outer_width=parseInt(window.getComputedStyle(document.getElementById('outer')).width);
-    var monitor_left =(outer_width- theSquareWidth)/2;   //热点区域左边界
-    var monitor_right =(outer_width+ theSquareWidth)/2;  //热点区域右边界
-    console.debug("outer_width: "+  outer_width+",monitor_left:"+monitor_left+",monitor_right:"+monitor_right);
+    var outer_width = parseInt(window.getComputedStyle(document.getElementById('outer')).width);
+    var monitor_left = (outer_width - theSquareWidth) / 2 - (theSquareBiggerWidth - theSquareWidth) / 2;   //热点区域左边界
+    var monitor_right = (outer_width + theSquareWidth) / 2 + (theSquareBiggerWidth - theSquareWidth) / 2;  //热点区域右边界
+    document.getElementById('theCenterBox').style.left = monitor_left + LEN_UNIT;//固定监控区域
+    document.getElementById('theCenterBox').style.width = theSquareBiggerWidth + theSquareMagin * 2 + LEN_UNIT;//固定监控区域
+    console.debug("outer_width: " + outer_width + ",monitor_left:" + monitor_left + ",monitor_right:" + monitor_right);
 
-    var CAN_CIRCLE=true;//是否可以循环滚动
+    var CAN_CIRCLE = true;//是否可以循环滚动
+    var inner = document.getElementById("inner");
+    inner.style.left = monitor_left + LEN_UNIT;
 
-//    //元素排列。第一个元素排在左边第一个
-//    var theMiddleIndex;
-//    if (theDragDiv.children.length % 2==0){
-//        //偶数个
-//        //中间的元素序号
-//        theMiddleIndex=theDragDiv.children.length/2;
-//    }else{
-//        theZuobian= (theDragDiv.children.length+1)/2;
-//    }
+    //    //元素排列。第一个元素排在左边第一个
+    //    var theMiddleIndex;
+    //    if (theDragDiv.children.length % 2==0){
+    //        //偶数个
+    //        //中间的元素序号
+    //        theMiddleIndex=theDragDiv.children.length/2;
+    //    }else{
+    //        theZuobian= (theDragDiv.children.length+1)/2;
+    //    }
     //各个元素左边界初始值
-//    var ElementLeftAry=new Array();
-//    var count=theDragDiv.children.length;
-//    for(var i=0;i<count;i++ ){
-//        var theObj=theDragDiv.children[i];
-//        console.log("left:"+theObj.style.left )
-//        // console.log(window.getComputedStyle(theObj).left);
-//    }
-
+    //    var ElementLeftAry=new Array();
+    //    var count=theDragDiv.children.length;
+    //    for(var i=0;i<count;i++ ){
+    //        var theObj=theDragDiv.children[i];
+    //        console.log("left:"+theObj.style.left )
+    //        // console.log(window.getComputedStyle(theObj).left);
+    //    }
 
 
 </script>
@@ -106,7 +120,6 @@ HTML代码
             x,//滑动的距离
             aboveX = 0; //设一个全局变量记录上一次内部块滑动的位置
 
-    var inner = document.getElementById("inner");
 
     function touchSatrt(e) {//触摸
         e.preventDefault();
@@ -116,75 +129,123 @@ HTML代码
 
     function touchMove(e) {//滑动
         e.preventDefault();
-        var flagCanMove=false;
+        var flagCanMove = false;
         var touch = e.touches[0];
         x = touch.pageX - startX;//滑动的距离
-        if(x>0){
+        if (x > 0) {
             //右滑
-            if(canMoveRight()){
-                flagCanMove=true;
+            if (canMoveRight()) {
+                flagCanMove = true;
             }
-        }else{
+        } else {
             //左滑
-            if(canMoveLeft()){
-                flagCanMove=true;
+            if (canMoveLeft()) {
+                flagCanMove = true;
             }
         }
-        if (flagCanMove){
+        if (flagCanMove) {
             inner.style.left = aboveX + x + "px"; //这一句中的aboveY是inner上次滑动后的位置
             //inner.style.webkitTransform = 'translate(' + 0+ 'px, ' + y + 'px)';  //也可以用css3的
             changeSize();
-        }else{
+        } else {
             //do nothins;
         }
     }
 
     function touchEnd(e) {//手指离开屏幕
         e.preventDefault();
+        dingwei();
         aboveX = parseInt(inner.style.left);//touch结束后记录内部滑块滑动的位置 在全局变量中体现 一定要用parseInt()将其转化为整数字;
-
     }//
     document.getElementById("inner").addEventListener('touchstart', touchSatrt, false);
     document.getElementById("inner").addEventListener('touchmove', touchMove, false);
     document.getElementById("inner").addEventListener('touchend', touchEnd, false);
-    console.log("theIndex:"+Math.floor(0.9))
-    function changeSize(){//改变大小
+
+
+    function changeSize() {//改变大小
         //最左边第一个元素的left是theSquareMagin（先对于inner的left
         //判断当前进入聚光灯区域的是哪个元素，放大它，移除聚光灯区域的是那个，大小恢复正常
         //进入聚光灯区域的可能同时有两个元素，都放大，触摸结束后根据哪个占的面积大，则独占聚光灯区域，整个inner自动移动
 
-        //计算当前在聚光灯区域最左边界的是哪个方块。
-        var theIndex=Math.floor( (monitor_left- parseInt(inner.style.left))/theSquareWidth)  +  1;
-        console.log("theIndex0:"+(monitor_left- parseInt(inner.style.left))/theSquareWidth)
-        console.log("theIndex:"+theIndex)
-        // iner.style.left+(x-1)*theSquareWidth+theSquareMagin = 第x元素的left = monitor_left
+        // 如果一个元素 right> 聚光灯区域左边界 and left <聚光灯区域左边界 则次元素是正在进入。
 
-//        var count=theDragDiv.children.length;
+
+        //计算当前在聚光灯区域最左边界的是哪个方块。
+        var theDif = (monitor_left - parseInt(inner.style.left));//移动的距离
+        var theDif2 = theDif % theSquareWidth / theSquareWidth;//最近一个移动的距离占宽度比
+        var count=theDragDiv.children.length;//方块个数
+        console.log("theDif:" + theDif + ",theDif2:" + theDif2);
+
+        var theIndex = Math.floor(theDif / theSquareWidth);
+//        console.log("theIndex0:"+(monitor_left- parseInt(inner.style.left))/theSquareWidth)
+//        console.log("theIndex:"+theIndex)
+
+        var theObj = theDragDiv.children[theIndex];
+        theObj.style.width = theSquareBiggerWidth - 20 * theDif2 + "px";
+        theObj.style.height = theObj.style.width;
+
+        var theIndex = Math.ceil(theDif / theSquareWidth);//刚进入的那个
+
+        if (theIndex<=count ){ //if没有超过
+            var theDif = (monitor_right- parseInt(inner.style.left));//移动的距离
+            var theDif2 = theDif % theSquareWidth / theSquareWidth;//最近一个移动的距离占宽度比
+            var theObj = theDragDiv.children[theIndex];
+
+            theObj.style.width = theSquareWidth + 20 * theDif2 + "px";
+            theObj.style.height = theObj.style.width;
+        }
+
+//        if( theObj.classList.contains("square")){
+//            //theObj.classList.remove("square");
+//            //theObj.classList.add("biggerSquare");
+
+//            theObj.style.width=100+20* theDif2+"px";
+//            theObj.style.height=theObj.style.width;
+//        }
+//
 //        for(var i=0;i<count;i++ ){
-//            var theObj=theDragDiv.children[i];
-//            console.log("left:"+theObj.style.left )
+//            if(i!= theIndex){
+//                theDragDiv.children[i].classList.remove("biggerSquare");
+//            }
 //           // console.log(window.getComputedStyle(theObj).left);
 //        }
-        //找到那个
+    }
+
+    function dingwei() {
+        //最近元素定位，最靠近聚光灯区域的元素占据整个聚光灯区域，左边界==聚光灯区域左边界
+        var theIndex = Math.round((monitor_left - parseInt(inner.style.left)) / theSquareWidth);
+        console.debug("最近的index:" + theIndex)
+        inner.style.left = (monitor_left - monitor_left * theIndex) + LEN_UNIT;//初始坐标-应该左移的位移。
     }
 
 
-    function canMoveRight(){
+    function canMoveRight() {
         //可否继续右滑
-        var left=parseInt(inner.style.left);
-        if(left >=monitor_left){return false;}
-        else{ return true;}
+        var left = parseInt(inner.style.left);
+        if (left >= monitor_left) {
+            return false;
+        }
+        else {
+            return true;
+        }
     }
 
 
-    function canMoveLeft(){
+    function canMoveLeft() {
         //可否继续左滑
-        var left=parseInt(inner.style.left);
-        var right=left+parseInt(theDragDiv.style.width);
-        console.log("right:"+right);
-        if (right<= monitor_right){return false;}
-        else{ return true;}
+        var left = parseInt(inner.style.left);
+        var right = left + parseInt(theDragDiv.style.width);
+        console.log("right:" + right);
+        if (right <= monitor_right) {
+            return false;
+        }
+        else {
+            return true;
+        }
     }
 
 
+</script>
+<script>
+    changeSize();
 </script>
