@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title></title>
+    <script src="https://code.createjs.com/easeljs-0.8.2.min.js"></script>
+</head>
+<body>
+
+<body onload="init();">
+<canvas id="demoCanvas" width="500" height="300"></canvas>
+</body>
+
+
+</body>
+</html>
+<script>
+    //调用段代码
+
+</script>
+<script>
+
+
+    function init() {
+        var stage = new createjs.Stage("demoCanvas");
+
+        var circle = new createjs.Shape();
+        circle.graphics.beginFill("DeepSkyBlue").drawCircle(0, 0, 50);
+        circle.x = 100;
+        circle.y = 100;
+        stage.addChild(circle);
+
+        stage.update();
+    }
+
+    var name = "The Window";
+    var object = {
+        name : "My Object",
+        getNameFunc : function(){
+            return function(){
+                return this.name;
+            };
+        }
+    };
+    alert(object.getNameFunc()());
+
+    var name = "The Window";
+    var object = {
+        name : "My Object",
+        getNameFunc : function(){
+            var that = this;
+            return function(){
+                return that.name;
+            };
+        }
+    };
+    alert(object.getNameFunc()());
+
+
+</script>
